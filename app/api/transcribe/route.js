@@ -19,7 +19,7 @@ export async function POST(req) {
         },
         body: JSON.stringify({
           audio_url: url,
-          speech_models: ["universal-2"]
+          speech_models: ["universal-2"],
         }),
       },
     );
@@ -63,7 +63,7 @@ export async function POST(req) {
       }
 
       if (checkData.status === "error") {
-        throw new Error("Transcription failed");
+        throw new Error(checkData.error || "Transcription failed");
       }
     }
 

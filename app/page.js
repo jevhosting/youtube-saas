@@ -4,6 +4,39 @@ import { useState } from "react";
 import UrlInput from "../components/UrlInput";
 import { processYouTubeVideo } from "../features/transcription/processVideo";
 
+function getYouTubeId(url) {
+  try {
+    const parsed = new URL(url);
+
+    // youtube.com/watch?v=...
+    if (parsed.searchParams.get("v")) {
+      return parsed.searchParams.get("v");
+    }
+
+    // youtu.be/...
+    if (parsed.hostname.includes("youtu.be")) {
+      return parsed.pathname.slice(1);
+    }
+
+    // youtube.com/shorts/...
+    if (parsed.pathname.includes("/shorts/")) {
+      return parsed.pathname.split("/shorts/")[1];
+    }
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+function normalizeYouTubeUrl(url) {
+  const id = getYouTubeId(url);
+
+  if (!id) return url;
+
+  return `https://www.youtube.com/watch?v=${id}`;
+}
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -38,6 +71,12 @@ export default function Home() {
     }
   };
 
+  const videoId = getYouTubeId(url);
+
+  const thumbnail = videoId
+    ? `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+    : null;
+
   return (
     <div className="min-h-screen bg-white text-black px-4 py-8">
       <main className="w-full max-w-5xl mx-auto flex flex-col gap-6">
@@ -69,7 +108,8 @@ export default function Home() {
 
                   setLoading(true);
 
-                  const data = await processYouTubeVideo(url);
+                  const normalizedUrl = normalizeYouTubeUrl(url);
+                  const data = await processYouTubeVideo(normalizedUrl);
                   setResult(data);
                 } catch (err) {
                   console.error(err);
@@ -82,6 +122,27 @@ export default function Home() {
 
             {error && (
               <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+            )}
+
+            {loading && (
+              <div className="w-full mt-6 p-4 border border-gray-200 rounded-lg bg-gray-50 space-y-4 animate-pulse">
+                {thumbnail && (
+                  <img
+                    src={thumbnail}
+                    alt="Video thumbnail"
+                    className="w-full h-48 object-cover rounded-md"
+                  />
+                )}
+
+                <div>
+                  <p className="text-sm text-gray-600">
+                    ⏳ Processing video...
+                  </p>
+                  <p className="text-xs text-gray-400">Transcribing audio</p>
+                  <p className="text-xs text-gray-400">Generating summary</p>
+                  <p className="text-xs text-gray-400">Preparing notes</p>
+                </div>
+              </div>
             )}
           </div>
         </div>

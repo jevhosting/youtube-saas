@@ -9,6 +9,8 @@ export async function processYouTubeVideo(url) {
 
   const data = await res.json();
 
+  console.log("API RESPONSE:", data);
+
   if (!res.ok) {
     throw new Error(data.error || "Error processing video");
   }
