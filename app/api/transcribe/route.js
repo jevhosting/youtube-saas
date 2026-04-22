@@ -1,8 +1,33 @@
+import fs from "fs";
+import { exec } from "child_process";
+import { promisify } from "util";
+
+const execAsync = promisify(exec);
+
 export async function POST(req) {
   try {
     console.log("API KEY:", process.env.ASSEMBLY_API_KEY);
 
     const { url } = await req.json();
+
+    const outputFile = "audio.mp3";
+
+    await execAsync(`yt-dlp -x --audio-format mp3 -o "${outputFile}" "${url}"`);
+
+    console.log("Audio downloaded from yt-dlp");
+
+    const uploadRes = await fetch("https://api.assemblyai.com/v2/upload", {
+      method: "POST",
+      headers: {
+        authorization: process.env.ASSEMBLY_API_KEY,
+      },
+      body: fs.createReadStream("audio.mp3"),
+      duplex: "half", // 👈 ESTA LÍNEA
+    });
+
+    const uploadData = await uploadRes.json();
+
+    console.log("UPLOAD RESPONSE:", uploadData);
 
     if (!url) {
       return Response.json({ error: "No URL provided" }, { status: 400 });
@@ -34,9 +59,6 @@ export async function POST(req) {
       return Response.json({ error: "Invalid YouTube URL" }, { status: 400 });
     }
 
-    const audioUrl = `https://api.vevioz.com/api/button/mp3/${videoId}`;
-
-    console.log("AUDIO URL:", audioUrl);
 
     const transcriptRes = await fetch(
       "https://api.assemblyai.com/v2/transcript",
@@ -47,7 +69,7 @@ export async function POST(req) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          audio_url: audioUrl,
+          audio_url: uploadData.upload_url,
           speech_models: ["universal-2"],
         }),
       },
