@@ -10,7 +10,11 @@ export async function POST(req) {
 
     const { url } = await req.json();
 
-    const outputFile = "audio.mp3";
+    if (!url) {
+      return Response.json({ error: "No URL provided" }, { status: 400 });
+    }
+
+    const outputFile = `audio-${Date.now()}.mp3`;
 
     await execAsync(`yt-dlp -x --audio-format mp3 -o "${outputFile}" "${url}"`);
 
@@ -21,17 +25,13 @@ export async function POST(req) {
       headers: {
         authorization: process.env.ASSEMBLY_API_KEY,
       },
-      body: fs.createReadStream("audio.mp3"),
+      body: fs.createReadStream(outputFile),
       duplex: "half", // 👈 ESTA LÍNEA
     });
 
     const uploadData = await uploadRes.json();
 
     console.log("UPLOAD RESPONSE:", uploadData);
-
-    if (!url) {
-      return Response.json({ error: "No URL provided" }, { status: 400 });
-    }
 
     // 1. Enviar URL a AssemblyAI
 
@@ -58,7 +58,6 @@ export async function POST(req) {
     if (!videoId) {
       return Response.json({ error: "Invalid YouTube URL" }, { status: 400 });
     }
-
 
     const transcriptRes = await fetch(
       "https://api.assemblyai.com/v2/transcript",
