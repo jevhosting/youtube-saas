@@ -9,6 +9,35 @@ export async function POST(req) {
     }
 
     // 1. Enviar URL a AssemblyAI
+
+    function getYouTubeId(url) {
+      const parsed = new URL(url);
+
+      if (parsed.searchParams.get("v")) {
+        return parsed.searchParams.get("v");
+      }
+
+      if (parsed.hostname.includes("youtu.be")) {
+        return parsed.pathname.slice(1);
+      }
+
+      if (parsed.pathname.includes("/shorts/")) {
+        return parsed.pathname.split("/shorts/")[1];
+      }
+
+      return null;
+    }
+
+    const videoId = getYouTubeId(url);
+
+    if (!videoId) {
+      return Response.json({ error: "Invalid YouTube URL" }, { status: 400 });
+    }
+
+    const audioUrl = `https://api.vevioz.com/api/button/mp3/${videoId}`;
+
+    console.log("AUDIO URL:", audioUrl);
+
     const transcriptRes = await fetch(
       "https://api.assemblyai.com/v2/transcript",
       {
@@ -18,7 +47,7 @@ export async function POST(req) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          audio_url: url,
+          audio_url: audioUrl,
           speech_models: ["universal-2"],
         }),
       },
