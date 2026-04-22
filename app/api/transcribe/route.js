@@ -116,6 +116,8 @@ export async function POST(req) {
         throw new Error(checkData.error || "Transcription failed");
       }
     }
+    fs.unlinkSync(outputFile);
+    console.log("Audio file deleted");
 
     return Response.json({
       transcript: finalData.text,
