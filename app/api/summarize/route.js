@@ -1,40 +1,35 @@
+import { YoutubeTranscript } from "youtube-transcript";
+
 export async function POST(req) {
   try {
-    const { transcript } = await req.json();
+    const { url } = await req.json();
 
-    if (!transcript) {
-      return Response.json({ error: "No transcript provided" }, { status: 400 });
+    if (!url) {
+      return Response.json({ error: "No URL provided" }, { status: 400 });
     }
 
-    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: "You are an academic assistant. Summarize content clearly for students.",
-          },
-          {
-            role: "user",
-            content: `Summarize this transcript into clear study notes:\n\n${transcript}`,
-          },
-        ],
-      }),
-    });
+    // 🔥 extraer video ID
+    const videoId = new URL(url).searchParams.get("v");
 
-    const data = await openaiRes.json();
+    if (!videoId) {
+      return Response.json({ error: "Invalid YouTube URL" }, { status: 400 });
+    }
 
-    const summary = data.choices?.[0]?.message?.content;
+    // 🔥 obtener transcript
+    const transcriptData = await YoutubeTranscript.fetchTranscript(videoId);
 
-    return Response.json({ summary });
+    const transcript = transcriptData
+      .map((t) => t.text)
+      .join(" ");
+
+    return Response.json({ transcript });
 
   } catch (error) {
-    console.error(error);
-    return Response.json({ error: "Error generating summary" }, { status: 500 });
+    console.error("Transcript error:", error);
+
+    return Response.json(
+      { error: "Transcript not available for this video" },
+      { status: 400 }
+    );
   }
 }
