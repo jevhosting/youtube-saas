@@ -1,21 +1,27 @@
 export default function UrlInput({ url, setUrl, onProcess, loading }) {
   return (
-    <div className="flex flex-col items-center gap-4">
-      <input
-        type="text"
-        placeholder="Paste YouTube link here..."
-        className="w-full border border-gray-300 p-4 rounded-md text-lg focus:outline-none focus:ring-2 focus:ring-black"
-        value={url}
-        onChange={(e) => setUrl(e.target.value)}
-      />
+  <div className="w-full flex items-center gap-2">
 
-      <button
-  className="w-full bg-black text-white py-3 rounded-md font-medium hover:bg-gray-800 transition disabled:opacity-50"
-  onClick={onProcess}
-  disabled={loading}
->
-  {loading ? "Processing..." : "Process"}
-</button>
-    </div>
-  );
+    <input
+      type="text"
+      placeholder="Paste YouTube link..."
+      value={url}
+      onChange={(e) => setUrl(e.target.value)}
+      className="flex-1 px-4 py-3 rounded-lg border border-gray-200 
+                 focus:outline-none focus:ring-2 focus:ring-black/10 
+                 text-sm"
+    />
+
+    <button
+      onClick={onProcess}
+      disabled={loading}
+      className="px-5 py-3 bg-black text-white rounded-lg text-sm 
+           hover:bg-gray-800 active:scale-95 transition-all duration-150 
+           disabled:opacity-50"
+    >
+      {loading ? "..." : "Process"}
+    </button>
+
+  </div>
+);
 }
