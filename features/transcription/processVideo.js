@@ -1,5 +1,5 @@
 export async function processYouTubeVideo(url) {
-  const res = await fetch("/api/transcribe", {
+  const res = await fetch("https://lemura-backend-production.up.railway.app/transcribe", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
