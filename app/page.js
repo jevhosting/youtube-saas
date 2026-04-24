@@ -263,105 +263,162 @@ export default function Home() {
         </>
       )}
 
+
       {result && (
-      <section id="results" className="mx-auto max-w-7xl px-6 py-20">
-        <div className="mb-10 max-w-3xl">
-          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
-            Results
+<>
+<nav className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl">
+<div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+<div className="flex items-center gap-3">
+<div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-sm font-bold text-white shadow-lg shadow-red-200/60">
+L
+</div>
+<div>
+<p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
+Lumora
+</p>
+<p className="text-sm text-slate-500">Learn faster from YouTube</p>
+</div>
+</div>
+
+    <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+      <a href="#results" className="transition hover:text-slate-950">
+        Results
+      </a>
+      <a href="#faq" className="transition hover:text-slate-950">
+        FAQ
+      </a>
+    </div>
+
+    <div className="flex items-center gap-3">
+      <button className="hidden text-sm font-medium text-slate-600 transition hover:text-slate-950 sm:inline-flex">
+        Login
+      </button>
+      <button className="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+        Start free
+      </button>
+    </div>
+  </div>
+</nav>
+
+<section id="results" className="px-6 py-10">
+  <div className="mx-auto max-w-6xl space-y-8">
+    <div className="rounded-[1.5rem] bg-white/80 px-6 py-5 backdrop-blur-sm">
+      <UrlInput
+        url={url}
+        setUrl={setUrl}
+        loading={loading}
+        onProcess={handleProcess}
+      />
+    </div>
+
+    <div className="px-1">
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+          Workspace
+        </div>
+        {loading && (
+          <div className="rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700">
+            {status}
+          </div>
+        )}
+        {error && (
+          <div className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-700">
+            {error}
+          </div>
+        )}
+        {!loading && !error && result && (
+          <div className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
+            Video processed successfully
+          </div>
+        )}
+        {!showWorkspace && (
+          <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">
+            Paste a link to start
+          </div>
+        )}
+      </div>
+    </div>
+
+    <div className="rounded-[1.75rem] bg-white px-6 py-6">
+      <div className="flex flex-col gap-5 md:flex-row md:items-center">
+        {videoId && (
+          <img
+            src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+            alt="YouTube video thumbnail"
+            className="h-40 w-full rounded-2xl object-cover md:w-[280px]"
+          />
+        )}
+
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-red-500">
+            Video
           </p>
-          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
-            A clearer flow from link to output
+          <h2 className="mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950">
+            {processedUrl}
           </h2>
-          <p className="mt-4 text-lg leading-8 text-slate-600">
-            The processing area stays in one place, keeps feedback visible, and lets
-            you switch between summary and transcript without re-running the request.
+          <p className="mt-2 text-sm text-slate-500">
+            Ready for summary & transcript
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div className="px-1">
+      <div className="flex gap-2">
+        {["summary", "transcript"].map((tab) => {
+          const isActive = activeTab === tab;
+
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`rounded-full px-4 py-2.5 text-sm font-medium capitalize transition ${
+                isActive
+                  ? "bg-slate-950 text-white"
+                  : "bg-white text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              {tab}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+
+    <div className="bg-white px-6 py-10">
+      <div className="mx-auto max-w-4xl">
+        <p className="mb-6 text-xs font-semibold uppercase tracking-[0.24em] text-red-500">
+          {activeTab}
+        </p>
+        <div className="whitespace-pre-line text-[15px] leading-8 text-slate-700">
+          {activeTab === "summary" ? summaryText : transcriptText}
+        </div>
+      </div>
+    </div>
+
+    <div className="rounded-[1.75rem] bg-slate-50 px-6 py-8">
+      <div className="flex flex-col items-start justify-between gap-4 rounded-[1.5rem] bg-white p-6 md:flex-row md:items-center">
+        <div>
+          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-red-500">
+            Upgrade
+          </p>
+          <h3 className="mt-2 text-2xl font-semibold text-slate-950">
+            Unlock longer videos and faster processing
+          </h3>
+          <p className="mt-2 text-sm leading-7 text-slate-600">
+            Get more capacity for deep study sessions, tutorials, and full lecture workflows.
           </p>
         </div>
 
-        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_90px_-45px_rgba(15,23,42,0.6)]">
-          <div className="border-b border-slate-200 bg-slate-50/80 px-6 py-5">
-            <UrlInput
-              url={url}
-              setUrl={setUrl}
-              loading={loading}
-              onProcess={handleProcess}
-            />
-          </div>
-
-          <div className="border-b border-slate-200 px-6 py-4">
-            <div className="flex flex-wrap items-center gap-3">
-              <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-                Workspace
-              </div>
-              {loading && (
-                <div className="rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700">
-                  {status}
-                </div>
-              )}
-              {error && (
-                <div className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-700">
-                  {error}
-                </div>
-              )}
-              {!loading && !error && result && (
-                <div className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
-                  Video processed successfully
-                </div>
-              )}
-              {!showWorkspace && (
-                <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">
-                  Paste a link to start
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex gap-2 border-b border-slate-200 px-6 pt-5">
-            {["summary", "transcript"].map((tab) => {
-              const isActive = activeTab === tab;
-
-              return (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`rounded-t-2xl px-4 py-3 text-sm font-medium capitalize transition ${
-                    isActive
-                      ? "bg-slate-950 text-white"
-                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-          </div>
-
-          <div className="px-6 py-6">
-            {videoId && (
-              <div className="mb-6 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50">
-                <img
-                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
-                  alt="YouTube video thumbnail"
-                  className="h-56 w-full object-cover"
-                />
-                <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
-                  {processedUrl}
-                </div>
-              </div>
-            )}
-
-            <div className="min-h-[280px] rounded-[1.5rem] bg-slate-950 p-6 text-slate-100">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-red-300">
-                {activeTab}
-              </p>
-              <div className="whitespace-pre-line text-sm leading-7 text-slate-200">
-                {activeTab === "summary" ? summaryText : transcriptText}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-      )}
+        <button className="rounded-full bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">
+          Upgrade now
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+</>
+)}
 
       {!result && (
         <>
