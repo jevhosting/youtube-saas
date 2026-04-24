@@ -15,21 +15,9 @@ export async function processYouTubeVideo(url) {
     throw new Error(data.error || "Error processing video");
   }
 
-  // 🔥 summary
-  const summaryRes = await fetch("/api/summarize", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      transcript: data.transcript,
-    }),
-  });
-
-  const summaryData = await summaryRes.json();
-
+  // ✅ YA EL BACKEND DEVUELVE TODO
   return {
     transcript: data.transcript,
-    summary: summaryData.summary,
+    summary: data.summary,
   };
 }
