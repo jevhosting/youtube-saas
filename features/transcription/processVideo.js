@@ -1,5 +1,5 @@
 export async function processYouTubeVideo(url) {
-  const res = await fetch("http://157.230.60.238:3000/transcribe", {
+  const res = await fetch("https://157.230.60.238:3000/transcribe", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
