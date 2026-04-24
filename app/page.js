@@ -4,6 +4,66 @@ import { useState } from "react";
 import UrlInput from "../components/UrlInput";
 import { processYouTubeVideo } from "../features/transcription/processVideo";
 
+const featureCards = [
+  {
+    title: "Smart summaries",
+    description: "Extract the ideas that matter most without replaying the full video.",
+  },
+  {
+    title: "Clean transcripts",
+    description: "Turn spoken content into readable text you can scan, copy, and study.",
+  },
+  {
+    title: "Study-first workflow",
+    description: "Go from video link to review material in a single focused flow.",
+  },
+];
+
+const highlights = [
+  ["No downloads", "Paste a link and process it in your browser."],
+  ["Fast review", "Jump between summary and transcript instantly."],
+  ["Built for learning", "Useful for classes, tutorials, podcasts, and research."],
+];
+
+const testimonialCards = [
+  {
+    quote: "This cut my review time in half during exam week.",
+    name: "Daniel R.",
+    role: "College student",
+  },
+  {
+    quote: "I finally get the notes I wanted from long lectures.",
+    name: "Maria S.",
+    role: "Nursing student",
+  },
+  {
+    quote: "Perfect for turning tutorial videos into something actionable.",
+    name: "Kevin L.",
+    role: "Computer science student",
+  },
+];
+
+const faqItems = [
+  ["How long does it take?", "Most videos finish processing in under a minute, depending on length."],
+  ["Do I need to install anything?", "No. Paste a YouTube link and Lumora handles the rest."],
+  ["Does it work with longer videos?", "Yes. Longer videos may simply take a bit more processing time."],
+  ["Is Lumora free?", "Lumora is free during beta while the product is still evolving."],
+];
+
+function extractYouTubeVideoId(value) {
+  try {
+    const parsedUrl = new URL(value);
+
+    if (parsedUrl.hostname.includes("youtu.be")) {
+      return parsedUrl.pathname.slice(1);
+    }
+
+    return parsedUrl.searchParams.get("v") || "";
+  } catch {
+    return "";
+  }
+}
+
 export default function Home() {
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
@@ -11,420 +71,417 @@ export default function Home() {
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("summary");
   const [status, setStatus] = useState("");
+  const [processedUrl, setProcessedUrl] = useState("");
+  const [videoId, setVideoId] = useState("");
+
+  async function handleProcess() {
+    try {
+      setError("");
+      setResult(null);
+
+      if (!url.trim()) {
+        setError("Please enter a YouTube URL.");
+        return;
+      }
+
+      const trimmedUrl = url.trim();
+
+      setLoading(true);
+      setStatus("Processing your video...");
+
+      const data = await processYouTubeVideo(trimmedUrl);
+      setResult(data);
+      setProcessedUrl(trimmedUrl);
+      setVideoId(extractYouTubeVideoId(trimmedUrl));
+      setActiveTab("summary");
+      setStatus("");
+      setUrl("");
+    } catch (err) {
+      console.error(err);
+      setError("We couldn't process this video. Try another one.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  const showWorkspace = loading || error || result;
+  const summaryText = result?.summary || "Your summary will appear here once the video is ready.";
+  const transcriptText =
+    result?.transcript || "The transcript will appear here after processing finishes.";
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-[#111827]">
-      {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
-
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-red-500 text-white rounded-lg flex items-center justify-center font-bold">
+    <div className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(239,68,68,0.15),_transparent_32%),linear-gradient(180deg,_#fffaf8_0%,_#ffffff_42%,_#fff6f1_100%)] text-slate-900">
+      {!result && (
+        <>
+      <nav className="sticky top-0 z-50 border-b border-white/60 bg-white/80 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-950 text-sm font-bold text-white shadow-lg shadow-red-200/60">
               L
             </div>
-            <span className="font-bold text-lg">Lumora</span>
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
+                Lumora
+              </p>
+              <p className="text-sm text-slate-500">Learn faster from YouTube</p>
+            </div>
           </div>
 
-          <div className="hidden md:flex gap-8 text-sm font-medium">
-            <a href="#features" className="hover:text-red-500">Features</a>
-            <a href="#how" className="hover:text-red-500">How it works</a>
-            <a href="#pricing" className="hover:text-red-500">Pricing</a>
-            <a href="#faq" className="hover:text-red-500">FAQ</a>
+          <div className="hidden items-center gap-8 text-sm font-medium text-slate-600 md:flex">
+            <a href="#features" className="transition hover:text-slate-950">
+              Features
+            </a>
+            <a href="#workflow" className="transition hover:text-slate-950">
+              Workflow
+            </a>
+            <a href="#results" className="transition hover:text-slate-950">
+              Results
+            </a>
+            <a href="#faq" className="transition hover:text-slate-950">
+              FAQ
+            </a>
           </div>
 
-          <div className="flex items-center gap-4">
-            <button className="text-sm font-medium hover:text-red-500">
+          <div className="flex items-center gap-3">
+            <button className="hidden text-sm font-medium text-slate-600 transition hover:text-slate-950 sm:inline-flex">
               Login
             </button>
-            <button className="bg-red-500 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-red-600 transition">
-              Sign up
+            <button className="rounded-full bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800">
+              Start free
             </button>
           </div>
         </div>
       </nav>
 
-      {/* WORKSPACE */}
-{result && (
-  <section className="max-w-6xl mx-auto px-6 pb-24 pt-10">
-
-    <div className="mb-8">
-      <UrlInput
-        url={url}
-        setUrl={setUrl}
-        loading={loading}
-        onProcess={async () => {
-          try {
-            setError("");
-            setResult(null);
-
-            if (!url.trim()) {
-              setError("Please enter a YouTube URL.");
-              return;
-            }
-
-            setLoading(true);
-            setStatus("Processing your video...");
-
-            const data = await processYouTubeVideo(url);
-            setResult(data);
-            setStatus("");
-          } catch (err) {
-            console.error(err);
-            setError("We couldn’t process this video. Try another one.");
-          } finally {
-            setLoading(false);
-          }
-        }}
-      />
-    </div>
-
-    {loading && <p className="mb-4 text-sm">⏳ {status}</p>}
-    {error && <p className="mb-4 text-red-500">{error}</p>}
-
-    <div className="flex gap-6 border-b mb-6">
-      {["summary", "transcript"].map((tab) => (
-        <button
-          key={tab}
-          onClick={() => setActiveTab(tab)}
-          className={`pb-3 ${
-            activeTab === tab
-              ? "text-red-500 border-b-2 border-red-500"
-              : "text-gray-400"
-          }`}
-        >
-          {tab}
-        </button>
-      ))}
-    </div>
-
-    <div className="whitespace-pre-line">
-      {activeTab === "summary" && result.summary}
-      {activeTab === "transcript" && result.transcript}
-    </div>
-
-  </section>
-)}
-
-      {/* HERO */}
-      <section className="max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-16 items-center">
+      <section className="mx-auto grid max-w-7xl gap-16 px-6 py-16 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:py-24">
         <div>
-          <p className="text-red-500 font-semibold mb-4">
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-red-200 bg-white/85 px-4 py-2 text-sm text-slate-700 shadow-sm">
+            <span className="h-2 w-2 rounded-full bg-red-500" />
             Built for students, researchers, and creators
-          </p>
+          </div>
 
-          <h1 className="text-5xl md:text-6xl font-bold leading-tight mb-6">
-            Turn YouTube videos into{" "}
-            <span className="text-red-500">study-ready knowledge</span>
+          <h1 className="max-w-3xl text-5xl font-semibold tracking-tight text-balance text-slate-950 md:text-7xl">
+            Turn long YouTube videos into clear study material.
           </h1>
 
-          <p className="text-lg text-gray-600 mb-8 max-w-xl leading-8">
-            Stop wasting hours watching long videos. Lumora extracts summaries,
-            transcripts, and study notes from YouTube videos so you can learn
-            faster, review better, and save time.
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-600">
+            Lumora helps you convert lectures, tutorials, podcasts, and explainers
+            into summaries and transcripts you can review in minutes instead of hours.
           </p>
 
-          <div className="bg-white p-4 rounded-2xl shadow-xl border border-gray-200 max-w-2xl">
+          <div className="mt-8 rounded-[2rem] border border-white/70 bg-white/90 p-4 shadow-[0_24px_80px_-40px_rgba(15,23,42,0.55)] backdrop-blur">
             <UrlInput
               url={url}
               setUrl={setUrl}
               loading={loading}
-              onProcess={async () => {
-                try {
-                  setError("");
-                  setResult(null);
-
-                  if (!url.trim()) {
-                    setError("Please enter a YouTube URL.");
-                    return;
-                  }
-
-                  setLoading(true);
-                  setStatus("Processing your video...");
-
-                  const data = await processYouTubeVideo(url);
-                  setResult(data);
-                  setStatus("");
-                } catch (err) {
-                  console.error(err);
-                  setError("We couldn’t process this video. Try another one.");
-                } finally {
-                  setLoading(false);
-                }
-              }}
+              onProcess={handleProcess}
             />
+
+            <div className="mt-4 flex flex-wrap gap-3 text-sm text-slate-500">
+              <span className="rounded-full bg-slate-100 px-3 py-1.5">No downloads</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5">One link, one click</span>
+              <span className="rounded-full bg-slate-100 px-3 py-1.5">Summary + transcript</span>
+            </div>
           </div>
 
-          {loading && (
-            <p className="mt-4 text-gray-500 text-sm">⏳ {status}</p>
+          {(loading || error) && (
+            <div className="mt-4 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 text-sm shadow-sm">
+              {loading && <p className="text-slate-600">{status}</p>}
+              {error && <p className="text-red-600">{error}</p>}
+            </div>
           )}
 
-          {error && (
-            <p className="mt-4 text-red-500 text-sm font-medium">{error}</p>
-          )}
-
-          <div className="flex flex-wrap gap-4 mt-6 text-sm text-gray-500">
-            <span>✔ No downloads</span>
-            <span>✔ No editing</span>
-            <span>✔ Paste a link and go</span>
-          </div>
-
-          <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-gray-600">
-            <span>⭐ 4.9 average rating</span>
-            <span>•</span>
+          <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-slate-500">
+            <span>4.9 average rating</span>
+            <span className="hidden sm:inline">•</span>
             <span>10,000+ videos processed this month</span>
           </div>
         </div>
 
-        {/* HERO CARD */}
         <div className="relative">
-          <div className="absolute -inset-4 bg-red-500 rounded-[2rem] rotate-3 opacity-90"></div>
-
-          <div className="relative bg-white rounded-[2rem] shadow-2xl border border-gray-200 p-8">
-            <div className="bg-gray-50 border border-gray-200 rounded-xl p-5 mb-5">
-              <p className="text-sm text-gray-400 mb-2">YouTube URL</p>
-              <div className="h-10 bg-white rounded-lg border border-gray-200"></div>
+          <div className="absolute inset-x-12 -top-6 h-40 rounded-full bg-red-300/30 blur-3xl" />
+          <div className="relative overflow-hidden rounded-[2rem] border border-white/70 bg-slate-950 p-8 text-white shadow-[0_30px_90px_-35px_rgba(15,23,42,0.75)]">
+            <div className="mb-8 flex items-center justify-between">
+              <div>
+                <p className="text-sm uppercase tracking-[0.3em] text-red-300">Preview</p>
+                <h2 className="mt-2 text-2xl font-semibold">Study-ready workspace</h2>
+              </div>
+              <div className="rounded-full border border-white/15 bg-white/10 px-3 py-1 text-xs text-slate-200">
+                Live output
+              </div>
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 bg-red-50 rounded-xl">
-                <h3 className="font-semibold text-red-600">Smart Summary</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Get the important ideas without watching the full video.
-                </p>
-              </div>
+              {featureCards.map((card, index) => (
+                <div
+                  key={card.title}
+                  className={`rounded-3xl border p-5 ${
+                    index === 0
+                      ? "border-red-400/40 bg-red-500/10"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
+                  <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-200">
+                    {card.title}
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-slate-300">{card.description}</p>
+                </div>
+              ))}
+            </div>
 
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <h3 className="font-semibold">Transcript</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Clean readable text generated from the video audio.
-                </p>
-              </div>
-
-              <div className="p-4 bg-gray-50 rounded-xl">
-                <h3 className="font-semibold">Study Notes</h3>
-                <p className="text-sm text-gray-600 mt-1">
-                  Turn content into review-ready learning material.
-                </p>
-              </div>
+            <div className="mt-8 grid gap-4 sm:grid-cols-3">
+              {[
+                ["Summary", "Readable in seconds"],
+                ["Transcript", "Searchable reference"],
+                ["Workflow", "Built for repeat use"],
+              ].map(([title, description]) => (
+                <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-sm font-medium text-white">{title}</p>
+                  <p className="mt-1 text-xs text-slate-300">{description}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      
-
-      {/* FEATURES */}
-      <section id="features" className="bg-white py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-red-500 font-semibold mb-2">Features</p>
-            <h2 className="text-4xl font-bold">
-              Everything you need to learn from video faster
-            </h2>
-            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
-              Lumora helps you turn long educational videos, lectures, podcasts,
-              tutorials, and research content into organized learning material.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-4 gap-6">
-            {[
-              ["Smart Summaries", "Get structured summaries that highlight only what matters."],
-              ["Accurate Transcripts", "Turn video audio into clean, readable text."],
-              ["Study Notes", "Generate organized notes you can use for exams or research."],
-              ["Time Saving", "Cut hours of watching into minutes of reading."],
-              ["Academic Focus", "Built for students, teachers, and researchers."],
-              ["Creator Friendly", "Repurpose videos into written content ideas."],
-              ["Easy Workflow", "Paste a link, process, and get results."],
-              ["Future Citations", "Designed to support academic citation features later."],
-            ].map(([title, desc]) => (
-              <div
-                key={title}
-                className="p-6 rounded-2xl border border-gray-200 bg-[#fafafa] hover:shadow-md transition"
-              >
-                <div className="w-10 h-10 bg-red-100 text-red-500 rounded-xl flex items-center justify-center mb-4">
-                  ✦
-                </div>
-                <h3 className="font-semibold mb-2">{title}</h3>
-                <p className="text-sm text-gray-600 leading-6">{desc}</p>
-              </div>
-            ))}
-          </div>
+      <section id="features" className="mx-auto max-w-7xl px-6 py-6">
+        <div className="grid gap-4 md:grid-cols-3">
+          {highlights.map(([title, description]) => (
+            <div
+              key={title}
+              className="rounded-[1.75rem] border border-slate-200/70 bg-white/85 p-6 shadow-[0_20px_60px_-45px_rgba(15,23,42,0.55)]"
+            >
+              <p className="text-sm font-semibold uppercase tracking-[0.22em] text-red-500">
+                {title}
+              </p>
+              <p className="mt-3 text-sm leading-7 text-slate-600">{description}</p>
+            </div>
+          ))}
         </div>
       </section>
+        </>
+      )}
 
-      {/* HOW IT WORKS */}
-      <section id="how" className="py-24 px-6 bg-[#fafafa]">
-        <div className="max-w-6xl mx-auto text-center">
-          <p className="text-red-500 font-semibold mb-2">How it works</p>
-          <h2 className="text-4xl font-bold mb-12">
-            From video to study material in 3 steps
-          </h2>
-
-          <div className="grid md:grid-cols-3 gap-8 text-left">
-            {[
-              ["1", "Paste a YouTube link", "Drop any video URL into Lumora. No setup, no downloads, no complicated workflow."],
-              ["2", "We process it with AI", "Lumora extracts the audio, transcribes it, and organizes the content into useful sections."],
-              ["3", "Get your results", "Receive summaries, transcripts, and study notes ready to read, copy, or review."],
-            ].map(([num, title, desc]) => (
-              <div key={num} className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
-                <div className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center font-bold mb-5">
-                  {num}
-                </div>
-                <h3 className="font-semibold text-xl mb-3">{title}</h3>
-                <p className="text-gray-600 leading-7">{desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className="bg-white py-24 px-6">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-red-500 font-semibold mb-2">Loved by learners</p>
-            <h2 className="text-4xl font-bold">
-              Save time every time you study
-            </h2>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              ["This literally saved me during finals week.", "Daniel R.", "College Student"],
-              ["I stopped rewatching long lectures and started reviewing notes instead.", "Maria S.", "Nursing Student"],
-              ["Best tool for turning YouTube lessons into something I can actually study.", "Kevin L.", "Computer Science Student"],
-            ].map(([quote, name, role]) => (
-              <div key={name} className="p-6 rounded-2xl border border-gray-200 bg-[#fafafa]">
-                <p className="text-yellow-500 mb-4">★★★★★</p>
-                <p className="text-gray-700 leading-7 mb-5">“{quote}”</p>
-                <p className="font-semibold">{name}</p>
-                <p className="text-sm text-gray-500">{role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* PRICING */}
-      <section id="pricing" className="py-24 px-6 bg-[#fafafa]">
-        <div className="max-w-6xl mx-auto text-center">
-          <p className="text-red-500 font-semibold mb-2">Pricing</p>
-          <h2 className="text-4xl font-bold mb-4">
-            Start free while Lumora is in beta
-          </h2>
-          <p className="text-gray-600 mb-12">
-            Simple plans designed for students, creators, and researchers.
+      {result && (
+      <section id="results" className="mx-auto max-w-7xl px-6 py-20">
+        <div className="mb-10 max-w-3xl">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
+            Results
           </p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
+            A clearer flow from link to output
+          </h2>
+          <p className="mt-4 text-lg leading-8 text-slate-600">
+            The processing area stays in one place, keeps feedback visible, and lets
+            you switch between summary and transcript without re-running the request.
+          </p>
+        </div>
 
-          <div className="grid md:grid-cols-3 gap-6 text-left">
-            {[
-              ["Free", "$0", "Try Lumora while in beta", ["5 videos per day", "Basic summaries", "Standard processing"]],
-              ["Pro", "$9", "For serious learners", ["Unlimited videos", "Advanced notes", "Faster processing", "Priority access"]],
-              ["Research", "$19", "For heavy study workflows", ["Longer videos", "Multi-video analysis soon", "Citation tools soon", "Export options soon"]],
-            ].map(([plan, price, desc, features]) => (
-              <div
-                key={plan}
-                className={`p-8 rounded-2xl border bg-white ${
-                  plan === "Pro"
-                    ? "border-red-500 shadow-xl scale-[1.02]"
-                    : "border-gray-200"
-                }`}
-              >
-                {plan === "Pro" && (
-                  <p className="text-xs bg-red-500 text-white px-3 py-1 rounded-full inline-block mb-4">
-                    Most popular
-                  </p>
-                )}
-                <h3 className="text-2xl font-bold mb-2">{plan}</h3>
-                <p className="text-gray-500 mb-5">{desc}</p>
-                <p className="text-4xl font-bold mb-6">
-                  {price}
-                  <span className="text-sm text-gray-500 font-normal"> / month</span>
-                </p>
+        <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-[0_30px_90px_-45px_rgba(15,23,42,0.6)]">
+          <div className="border-b border-slate-200 bg-slate-50/80 px-6 py-5">
+            <UrlInput
+              url={url}
+              setUrl={setUrl}
+              loading={loading}
+              onProcess={handleProcess}
+            />
+          </div>
 
-                <ul className="space-y-3 mb-8">
-                  {features.map((feature) => (
-                    <li key={feature} className="text-gray-600">
-                      <span className="text-red-500">✓</span> {feature}
-                    </li>
-                  ))}
-                </ul>
+          <div className="border-b border-slate-200 px-6 py-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
+                Workspace
+              </div>
+              {loading && (
+                <div className="rounded-full bg-amber-100 px-3 py-1 text-sm text-amber-700">
+                  {status}
+                </div>
+              )}
+              {error && (
+                <div className="rounded-full bg-red-100 px-3 py-1 text-sm text-red-700">
+                  {error}
+                </div>
+              )}
+              {!loading && !error && result && (
+                <div className="rounded-full bg-emerald-100 px-3 py-1 text-sm text-emerald-700">
+                  Video processed successfully
+                </div>
+              )}
+              {!showWorkspace && (
+                <div className="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-600">
+                  Paste a link to start
+                </div>
+              )}
+            </div>
+          </div>
 
-                <button className={`w-full py-3 rounded-lg font-semibold ${
-                  plan === "Pro"
-                    ? "bg-red-500 text-white hover:bg-red-600"
-                    : "border border-red-500 text-red-500 hover:bg-red-50"
-                }`}>
-                  Get started
+          <div className="flex gap-2 border-b border-slate-200 px-6 pt-5">
+            {["summary", "transcript"].map((tab) => {
+              const isActive = activeTab === tab;
+
+              return (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`rounded-t-2xl px-4 py-3 text-sm font-medium capitalize transition ${
+                    isActive
+                      ? "bg-slate-950 text-white"
+                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
+                  }`}
+                >
+                  {tab}
                 </button>
+              );
+            })}
+          </div>
+
+          <div className="px-6 py-6">
+            {videoId && (
+              <div className="mb-6 overflow-hidden rounded-[1.5rem] border border-slate-200 bg-slate-50">
+                <img
+                  src={`https://img.youtube.com/vi/${videoId}/hqdefault.jpg`}
+                  alt="YouTube video thumbnail"
+                  className="h-56 w-full object-cover"
+                />
+                <div className="border-t border-slate-200 px-4 py-3 text-sm text-slate-600">
+                  {processedUrl}
+                </div>
+              </div>
+            )}
+
+            <div className="min-h-[280px] rounded-[1.5rem] bg-slate-950 p-6 text-slate-100">
+              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.24em] text-red-300">
+                {activeTab}
+              </p>
+              <div className="whitespace-pre-line text-sm leading-7 text-slate-200">
+                {activeTab === "summary" ? summaryText : transcriptText}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      )}
+
+      {!result && (
+        <>
+      <section id="workflow" className="bg-white/70 px-6 py-24">
+        <div className="mx-auto max-w-6xl">
+          <div className="mx-auto mb-14 max-w-3xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
+              Workflow
+            </p>
+            <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
+              From YouTube link to useful notes in three steps
+            </h2>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {[
+              [
+                "01",
+                "Paste the video link",
+                "Start with any YouTube URL you want to review, study, or reference later.",
+              ],
+              [
+                "02",
+                "Let Lumora process it",
+                "The app sends the request, gets the transcript and summary, and keeps feedback visible while it runs.",
+              ],
+              [
+                "03",
+                "Read, scan, and reuse",
+                "Switch between summary and transcript to review the content in the format you need.",
+              ],
+            ].map(([step, title, description]) => (
+              <div
+                key={step}
+                className="rounded-[2rem] border border-slate-200 bg-white p-8 shadow-[0_25px_70px_-50px_rgba(15,23,42,0.6)]"
+              >
+                <div className="mb-6 inline-flex rounded-full bg-red-500 px-4 py-2 text-sm font-semibold text-white">
+                  {step}
+                </div>
+                <h3 className="text-2xl font-semibold text-slate-950">{title}</h3>
+                <p className="mt-4 leading-7 text-slate-600">{description}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="bg-white py-24 px-6">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <p className="text-red-500 font-semibold mb-2">FAQ</p>
-            <h2 className="text-4xl font-bold">Questions people ask</h2>
+      <section className="mx-auto max-w-6xl px-6 py-24">
+        <div className="mb-12 text-center">
+          <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-500">
+            Loved by learners
+          </p>
+          <h2 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
+            A calmer study experience for video-heavy work
+          </h2>
+        </div>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          {testimonialCards.map((item) => (
+            <div
+              key={item.name}
+              className="rounded-[2rem] border border-slate-200 bg-white/90 p-7 shadow-[0_20px_70px_-55px_rgba(15,23,42,0.65)]"
+            >
+              <p className="text-sm uppercase tracking-[0.2em] text-red-500">Five-star feedback</p>
+              <p className="mt-4 text-lg leading-8 text-slate-700">"{item.quote}"</p>
+              <p className="mt-6 font-semibold text-slate-950">{item.name}</p>
+              <p className="text-sm text-slate-500">{item.role}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="faq" className="bg-slate-950 px-6 py-24 text-white">
+        <div className="mx-auto max-w-4xl">
+          <div className="mb-12 text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.24em] text-red-300">
+              FAQ
+            </p>
+            <h2 className="mt-3 text-4xl font-semibold tracking-tight">
+              Questions people ask before they try it
+            </h2>
           </div>
 
           <div className="space-y-4">
-            {[
-              ["How long does it take?", "Most videos are processed in under a minute, depending on length."],
-              ["Do I need to install anything?", "No. Just paste a YouTube link and Lumora handles the rest."],
-              ["Does it work with long videos?", "Yes. Longer videos may take more time to process."],
-              ["Is Lumora free?", "Lumora is free during beta. Paid plans will be added later."],
-              ["Who is this for?", "Students, researchers, teachers, creators, and anyone who learns from video."],
-            ].map(([q, a]) => (
-              <div key={q} className="border border-gray-200 rounded-xl p-5 bg-[#fafafa]">
-                <h3 className="font-semibold mb-2">{q}</h3>
-                <p className="text-gray-600">{a}</p>
+            {faqItems.map(([question, answer]) => (
+              <div
+                key={question}
+                className="rounded-[1.5rem] border border-white/10 bg-white/5 p-6"
+              >
+                <h3 className="text-lg font-semibold">{question}</h3>
+                <p className="mt-2 leading-7 text-slate-300">{answer}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-gray-200 bg-[#fafafa] px-6 py-12">
-        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10">
+      <footer className="border-t border-slate-200 bg-white px-6 py-10">
+        <div className="mx-auto flex max-w-7xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h3 className="font-bold text-red-500 text-lg mb-3">Lumora</h3>
-            <p className="text-gray-600 text-sm leading-6">
-              Turn YouTube videos into structured knowledge for studying,
-              research, and content creation.
+            <p className="text-lg font-semibold text-slate-950">Lumora</p>
+            <p className="text-sm text-slate-500">
+              Turn YouTube videos into structured knowledge for faster learning.
             </p>
           </div>
 
-          <div>
-            <h4 className="font-semibold mb-3">Product</h4>
-            <p className="text-sm text-gray-500 mb-2">Features</p>
-            <p className="text-sm text-gray-500 mb-2">Pricing</p>
-            <p className="text-sm text-gray-500">Roadmap</p>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-3">Company</h4>
-            <p className="text-sm text-gray-500 mb-2">About</p>
-            <p className="text-sm text-gray-500 mb-2">Contact</p>
-            <p className="text-sm text-gray-500">Blog</p>
-          </div>
-
-          <div>
-            <h4 className="font-semibold mb-3">Legal</h4>
-            <p className="text-sm text-gray-500 mb-2">Privacy</p>
-            <p className="text-sm text-gray-500">Terms</p>
+          <div className="flex flex-wrap gap-5 text-sm text-slate-500">
+            <span>Features</span>
+            <span>Pricing</span>
+            <span>Privacy</span>
+            <span>Terms</span>
           </div>
         </div>
 
-        <p className="text-center text-gray-400 text-sm mt-10">
+        <p className="mx-auto mt-6 max-w-7xl text-sm text-slate-400">
           © 2026 Lumora. All rights reserved.
         </p>
       </footer>
+        </>
+      )}
     </div>
   );
 }
