@@ -1,26 +1,7 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import UrlInput from "../components/UrlInput";
 import { processYouTubeVideo } from "../features/transcription/processVideo";
-
-function getYouTubeId(url) {
-  try {
-    const parsed = new URL(url);
-    if (parsed.searchParams.get("v")) return parsed.searchParams.get("v");
-    if (parsed.hostname.includes("youtu.be")) return parsed.pathname.slice(1);
-    if (parsed.pathname.includes("/shorts/"))
-      return parsed.pathname.split("/shorts/")[1];
-    return null;
-  } catch {
-    return null;
-  }
-}
-
-function normalizeYouTubeUrl(url) {
-  const id = getYouTubeId(url);
-  if (!id) return url;
-  return `https://www.youtube.com/watch?v=${id}`;
-}
 
 export default function Home() {
   const [url, setUrl] = useState("");
@@ -28,33 +9,21 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("summary");
-  const [status, setStatus] = useState("Starting...");
+  const [status, setStatus] = useState("");
   const [videoTitle, setVideoTitle] = useState("");
   const [history, setHistory] = useState([]);
-  const [notes, setNotes] = useState("");
-  const [notesLoading, setNotesLoading] = useState(false);
-  const [selectedVideoId, setSelectedVideoId] = useState(null);
+
+  const heroRef = useRef(null);
+  const featuresRef = useRef(null);
+  const resultRef = useRef(null);
 
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("videos") || "[]");
     setHistory(saved);
   }, []);
 
-  const handleGenerateNotes = async () => {
-    try {
-      setNotesLoading(true);
-      const res = await fetch("/api/notes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transcript: result.transcript }),
-      });
-      const data = await res.json();
-      setNotes(data.notes);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setNotesLoading(false);
-    }
+  const scrollTo = (ref) => {
+    ref.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   return (
@@ -63,72 +32,55 @@ export default function Home() {
       {/* SIDEBAR */}
       <div className="w-[260px] h-screen flex flex-col p-4">
 
-        {/* TOP AREA */}
-        <div className="mb-6">
-          <h1 className="text-white font-semibold text-lg">Lumora</h1>
-        </div>
+        <h1 className="text-lg font-semibold mb-6">Lumora</h1>
 
-        {/* HISTORY */}
-        <div className="flex-1 overflow-y-auto">
-          <p className="text-xs text-gray-500 mb-3">History</p>
+        <button
+          onClick={() => scrollTo(heroRef)}
+          className="text-left text-sm text-gray-400 mb-2 hover:text-white"
+        >
+          New analysis
+        </button>
 
-          <div className="space-y-2">
-            {history.map((video) => (
-              <div
-                key={video.id}
-                onClick={() => {
-                  setSelectedVideoId(video.id);
-                  setResult({
-                    summary: video.summary,
-                    transcript: video.transcript,
-                    url: video.url,
-                  });
-                  setVideoTitle(video.title);
-                  setActiveTab("summary");
-                }}
-                className="p-3 rounded-md cursor-pointer hover:bg-[#1a1a1a] text-sm text-gray-300"
-              >
-                {video.title}
-              </div>
-            ))}
-          </div>
+        <button
+          onClick={() => scrollTo(featuresRef)}
+          className="text-left text-sm text-gray-400 mb-4 hover:text-white"
+        >
+          Features
+        </button>
+
+        <p className="text-xs text-gray-500 mb-2">History</p>
+
+        <div className="space-y-2 overflow-y-auto">
+          {history.map((video) => (
+            <div
+              key={video.id}
+              onClick={() => {
+                setResult(video);
+                setVideoTitle(video.title);
+                setActiveTab("summary");
+                scrollTo(resultRef);
+              }}
+              className="p-2 text-sm text-gray-300 hover:bg-[#1a1a1a] rounded cursor-pointer"
+            >
+              {video.title}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* MAIN */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 overflow-y-auto">
 
-        {/* TOP BAR */}
-        <div className="w-full border-b border-gray-800 px-6 py-3 flex items-center justify-between">
+        {/* HERO */}
+        <section
+          ref={heroRef}
+          className="h-screen flex flex-col items-center justify-center text-center px-6"
+        >
+          <h1 className="text-3xl font-semibold mb-4">
+            Turn YouTube videos into study-ready knowledge
+          </h1>
 
-          <div className="text-sm text-gray-400">
-            Lumora: <span className="text-white">Academic</span>
-          </div>
-
-          <div className="flex gap-2">
-            {["summary", "transcript", "notes"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-1.5 text-sm rounded-md ${
-                  activeTab === tab
-                    ? "bg-white text-black"
-                    : "text-gray-400 hover:text-white"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div></div>
-        </div>
-
-        {/* CONTENT */}
-        <div className="flex-1 flex flex-col items-center justify-start px-6">
-
-          {/* INPUT */}
-          <div className="w-full max-w-2xl mt-24">
+          <div className="w-full max-w-2xl">
             <UrlInput
               url={url}
               setUrl={setUrl}
@@ -137,124 +89,125 @@ export default function Home() {
                 try {
                   setError("");
                   setResult(null);
-                  setNotes("");
-                  setStatus("Downloading audio...");
+                  setStatus("Processing...");
 
                   if (!url.trim()) {
-                    setError("Please enter a URL");
+                    setError("Enter a URL");
                     return;
                   }
 
                   setLoading(true);
 
-                  const normalizedUrl = normalizeYouTubeUrl(url);
+                  const videoData = await processYouTubeVideo(url);
 
-                  let fetchedTitle = "";
+                  setResult(videoData);
 
-                  try {
-                    const res = await fetch(
-                      `https://noembed.com/embed?url=${normalizedUrl}`
-                    );
-                    const json = await res.json();
-                    fetchedTitle = json.title || "";
-                    setVideoTitle(fetchedTitle);
-                  } catch (e) {
-                    console.error("Failed to fetch title");
-                  }
-
-                  setStatus("Transcribing video...");
-
-                  const videoData = await processYouTubeVideo(normalizedUrl);
-                  const finalTitle = fetchedTitle || "Untitled Video";
-
-                  setResult({
+                  const newVideo = {
+                    id: Date.now(),
+                    title: "Untitled Video",
                     ...videoData,
-                    url: normalizedUrl,
-                  });
-
-                  setUrl("");
-                  setVideoTitle("");
+                  };
 
                   const existing = JSON.parse(
                     localStorage.getItem("videos") || "[]"
                   );
 
-                  const newVideo = {
-                    id: Date.now(),
-                    url: normalizedUrl,
-                    title: finalTitle,
-                    summary: videoData.summary,
-                    transcript: videoData.transcript,
-                    createdAt: new Date().toISOString(),
-                  };
-
                   localStorage.setItem(
                     "videos",
                     JSON.stringify([newVideo, ...existing])
                   );
+
                   setHistory([newVideo, ...existing]);
 
+                  setTimeout(() => scrollTo(resultRef), 300);
                 } catch (err) {
-                  console.error(err);
-                  setError("We couldn’t process this video.");
+                  setError("Error processing video");
                 } finally {
                   setLoading(false);
                 }
               }}
             />
-
-            {error && (
-              <p className="text-red-400 text-sm mt-2">{error}</p>
-            )}
           </div>
 
-          {/* LOADING */}
-          {loading && (
-            <div className="w-full max-w-2xl mt-6">
-              <p className="text-sm text-gray-400">⏳ {status}</p>
+          {loading && <p className="mt-4 text-gray-400">{status}</p>}
+          {error && <p className="mt-4 text-red-400">{error}</p>}
+        </section>
+
+        {/* FEATURES */}
+        <section
+          ref={featuresRef}
+          className="py-20 px-6 max-w-5xl mx-auto"
+        >
+          <h2 className="text-xl font-semibold mb-10 text-center">
+            What you can do
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="bg-[#1a1a1a] p-6 rounded-lg">
+              <h3 className="font-semibold mb-2">Summaries</h3>
+              <p className="text-sm text-gray-400">
+                Get structured summaries instantly
+              </p>
             </div>
-          )}
 
-          {/* RESULT */}
-          {result && (
-            <div className="w-full max-w-3xl mt-10">
-
-              {activeTab === "summary" && (
-                <p className="text-gray-300 whitespace-pre-line">
-                  {result.summary}
-                </p>
-              )}
-
-              {activeTab === "transcript" && (
-                <div className="max-h-[500px] overflow-y-auto">
-                  <p className="text-gray-400 text-sm whitespace-pre-line">
-                    {result.transcript}
-                  </p>
-                </div>
-              )}
-
-              {activeTab === "notes" && (
-                <div>
-                  <button
-                    onClick={handleGenerateNotes}
-                    className="px-4 py-2 bg-white text-black rounded-md text-sm"
-                  >
-                    Generate Notes
-                  </button>
-
-                  {notesLoading && <p className="mt-3">Generating...</p>}
-                  {notes && (
-                    <p className="mt-4 text-gray-300 whitespace-pre-line">
-                      {notes}
-                    </p>
-                  )}
-                </div>
-              )}
-
+            <div className="bg-[#1a1a1a] p-6 rounded-lg">
+              <h3 className="font-semibold mb-2">Transcripts</h3>
+              <p className="text-sm text-gray-400">
+                Full video transcription
+              </p>
             </div>
-          )}
 
-        </div>
+            <div className="bg-[#1a1a1a] p-6 rounded-lg">
+              <h3 className="font-semibold mb-2">Notes</h3>
+              <p className="text-sm text-gray-400">
+                Study-ready key points
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* RESULT */}
+        {result && (
+          <section
+            ref={resultRef}
+            className="py-20 px-6 max-w-4xl mx-auto"
+          >
+            <h2 className="text-lg mb-4 text-gray-300">
+              {videoTitle || "Video Result"}
+            </h2>
+
+            {/* TABS */}
+            <div className="flex gap-2 mb-6">
+              {["summary", "transcript"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`px-4 py-2 text-sm ${
+                    activeTab === tab
+                      ? "text-white"
+                      : "text-gray-500"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
+
+            {/* CONTENT */}
+            {activeTab === "summary" && (
+              <p className="text-gray-300 whitespace-pre-line">
+                {result.summary}
+              </p>
+            )}
+
+            {activeTab === "transcript" && (
+              <p className="text-gray-400 whitespace-pre-line">
+                {result.transcript}
+              </p>
+            )}
+          </section>
+        )}
+
       </div>
     </div>
   );
