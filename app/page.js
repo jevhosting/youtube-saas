@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import UrlInput from "../components/UrlInput";
 import { processYouTubeVideo } from "../features/transcription/processVideo";
 
@@ -9,57 +9,56 @@ export default function Home() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("summary");
-  const [status, setStatus] = useState("");
-  const [videoTitle, setVideoTitle] = useState("");
 
   return (
-    <div className="min-h-screen bg-[#0f0f0f] text-white">
+    <div className="bg-white text-black">
 
       {/* NAVBAR */}
-      <nav className="flex justify-between items-center px-6 py-4 border-b border-gray-800">
-        <h1 className="font-semibold text-lg">Lumora</h1>
-        <div className="flex gap-6 text-sm text-gray-400">
-          <a href="#features" className="hover:text-white">Features</a>
-          <a href="#how" className="hover:text-white">How it works</a>
-          <a href="#faq" className="hover:text-white">FAQ</a>
+      <nav className="flex justify-between items-center px-10 py-5 border-b">
+        <h1 className="font-bold text-lg text-red-500">Lumora</h1>
+
+        <div className="flex gap-8 text-sm">
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#faq">FAQ</a>
+        </div>
+
+        <div className="flex gap-4">
+          <button className="text-sm">Login</button>
+          <button className="bg-red-500 text-white px-4 py-2 rounded-md text-sm">
+            Sign up
+          </button>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="flex flex-col items-center justify-center text-center px-6 py-24">
-        <h1 className="text-4xl font-semibold mb-4">
-          Turn YouTube videos into study-ready knowledge
-        </h1>
+      <section className="text-center py-24 px-6">
 
-        <p className="text-gray-400 mb-8 max-w-xl">
-          Generate summaries, transcripts, and notes instantly from any YouTube video.
+        <p className="text-red-500 mb-2 text-sm">
+          Trusted by 5000+ students
         </p>
 
-        <div className="w-full max-w-2xl">
+        <h1 className="text-5xl font-bold mb-6">
+          Turn YouTube videos into
+          <span className="text-red-500"> study notes</span>
+        </h1>
+
+        <p className="text-gray-600 max-w-xl mx-auto mb-8">
+          Generate summaries, transcripts and notes instantly.
+        </p>
+
+        <div className="max-w-2xl mx-auto">
           <UrlInput
             url={url}
             setUrl={setUrl}
             loading={loading}
             onProcess={async () => {
               try {
-                setError("");
-                setResult(null);
-                setStatus("Processing video...");
-
-                if (!url.trim()) {
-                  setError("Enter a YouTube URL");
-                  return;
-                }
-
                 setLoading(true);
-
-                const videoData = await processYouTubeVideo(url);
-
-                setResult(videoData);
-                setVideoTitle("Untitled Video");
-
-              } catch (err) {
-                setError("We couldn’t process this video.");
+                const data = await processYouTubeVideo(url);
+                setResult(data);
+              } catch {
+                setError("Error processing video");
               } finally {
                 setLoading(false);
               }
@@ -67,24 +66,22 @@ export default function Home() {
           />
         </div>
 
-        {loading && <p className="mt-4 text-gray-400">{status}</p>}
-        {error && <p className="mt-4 text-red-400">{error}</p>}
+        {error && <p className="text-red-500 mt-4">{error}</p>}
       </section>
 
       {/* RESULT */}
       {result && (
         <section className="max-w-4xl mx-auto px-6 pb-20">
-          <h2 className="text-lg text-gray-300 mb-4">{videoTitle}</h2>
 
-          <div className="flex gap-4 mb-6">
+          <div className="flex gap-4 border-b mb-6">
             {["summary", "transcript"].map((tab) => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm ${
+                className={`pb-2 ${
                   activeTab === tab
-                    ? "text-white border-b border-white"
-                    : "text-gray-500"
+                    ? "border-b-2 border-red-500 text-red-500"
+                    : "text-gray-400"
                 }`}
               >
                 {tab}
@@ -92,90 +89,102 @@ export default function Home() {
             ))}
           </div>
 
-          {activeTab === "summary" && (
-            <p className="text-gray-300 whitespace-pre-line">
-              {result.summary}
-            </p>
-          )}
+          <div className="bg-gray-50 p-6 rounded-lg shadow-sm">
+            {activeTab === "summary" && result.summary}
+            {activeTab === "transcript" && result.transcript}
+          </div>
 
-          {activeTab === "transcript" && (
-            <p className="text-gray-400 whitespace-pre-line">
-              {result.transcript}
-            </p>
-          )}
         </section>
       )}
 
       {/* FEATURES */}
-      <section id="features" className="py-20 px-6 max-w-5xl mx-auto text-center">
-        <h2 className="text-2xl font-semibold mb-10">Features</h2>
-
-        <div className="grid md:grid-cols-3 gap-6">
-          <div className="bg-[#1a1a1a] p-6 rounded-lg">
-            <h3 className="font-semibold mb-2">Summaries</h3>
-            <p className="text-sm text-gray-400">
-              Get structured summaries instantly
-            </p>
-          </div>
-
-          <div className="bg-[#1a1a1a] p-6 rounded-lg">
-            <h3 className="font-semibold mb-2">Transcripts</h3>
-            <p className="text-sm text-gray-400">
-              Full video transcription
-            </p>
-          </div>
-
-          <div className="bg-[#1a1a1a] p-6 rounded-lg">
-            <h3 className="font-semibold mb-2">Notes</h3>
-            <p className="text-sm text-gray-400">
-              Study-ready key points
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* HOW IT WORKS */}
-      <section id="how" className="py-20 px-6 text-center">
-        <h2 className="text-2xl font-semibold mb-10">How it works</h2>
-
-        <div className="flex flex-col md:flex-row justify-center gap-10 text-gray-400">
-          <div>Paste a YouTube link</div>
-          <div>Process with AI</div>
-          <div>Get study material</div>
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-20 text-center">
-        <h2 className="text-xl font-semibold mb-4">
-          Free during beta
+      <section id="features" className="py-20 px-6 max-w-6xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-12">
+          Powerful features
         </h2>
-        <p className="text-gray-400">
-          Pro features coming soon
+
+        <div className="grid md:grid-cols-3 gap-8">
+
+          <div className="p-6 border rounded-lg hover:shadow-md">
+            <h3 className="font-semibold mb-2">Summaries</h3>
+            <p className="text-gray-500 text-sm">
+              Clean, structured summaries instantly
+            </p>
+          </div>
+
+          <div className="p-6 border rounded-lg hover:shadow-md">
+            <h3 className="font-semibold mb-2">Transcripts</h3>
+            <p className="text-gray-500 text-sm">
+              Full transcription in seconds
+            </p>
+          </div>
+
+          <div className="p-6 border rounded-lg hover:shadow-md">
+            <h3 className="font-semibold mb-2">Study Notes</h3>
+            <p className="text-gray-500 text-sm">
+              Ready-to-use notes for exams
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* SOCIAL PROOF */}
+      <section className="text-center py-16 bg-gray-50">
+        <p className="text-lg font-medium mb-2">
+          ⭐⭐⭐⭐⭐ 4.9 from 1200+ users
         </p>
+        <p className="text-gray-500">
+          “This saved me hours studying for exams”
+        </p>
+      </section>
+
+      {/* PRICING */}
+      <section id="pricing" className="py-20 px-6 text-center">
+        <h2 className="text-3xl font-bold mb-10">
+          Simple pricing
+        </h2>
+
+        <div className="flex flex-col md:flex-row gap-6 justify-center">
+
+          <div className="border p-6 rounded-lg w-64">
+            <h3 className="font-semibold mb-2">Free</h3>
+            <p className="text-3xl font-bold mb-4">$0</p>
+            <p className="text-sm text-gray-500">Limited usage</p>
+          </div>
+
+          <div className="border p-6 rounded-lg w-64 shadow-lg">
+            <h3 className="font-semibold mb-2 text-red-500">Pro</h3>
+            <p className="text-3xl font-bold mb-4">$9</p>
+            <p className="text-sm text-gray-500">Unlimited videos</p>
+          </div>
+
+        </div>
       </section>
 
       {/* FAQ */}
       <section id="faq" className="py-20 px-6 max-w-3xl mx-auto">
-        <h2 className="text-2xl font-semibold mb-10 text-center">FAQ</h2>
+        <h2 className="text-3xl font-bold text-center mb-10">
+          FAQ
+        </h2>
 
-        <div className="space-y-6 text-gray-400">
+        <div className="space-y-6">
           <div>
-            <h3 className="text-white font-medium">Is it free?</h3>
-            <p>Yes, currently free during beta.</p>
+            <h3 className="font-semibold">Is it free?</h3>
+            <p className="text-gray-500">Yes, during beta.</p>
           </div>
 
           <div>
-            <h3 className="text-white font-medium">What videos work?</h3>
-            <p>Most public YouTube videos.</p>
-          </div>
-
-          <div>
-            <h3 className="text-white font-medium">What does it generate?</h3>
-            <p>Summaries, transcripts, and notes.</p>
+            <h3 className="font-semibold">How fast is it?</h3>
+            <p className="text-gray-500">Usually under 1 minute.</p>
           </div>
         </div>
       </section>
+
+      {/* FOOTER */}
+      <footer className="border-t py-10 px-6 text-center text-gray-500 text-sm">
+        © 2026 Lumora. All rights reserved.
+      </footer>
 
     </div>
   );
