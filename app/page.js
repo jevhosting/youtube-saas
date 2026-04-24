@@ -16,6 +16,7 @@ export default function Home() {
     <div className="min-h-screen bg-[#fafafa] text-[#111827]">
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
+
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 bg-red-500 text-white rounded-lg flex items-center justify-center font-bold">
@@ -41,6 +42,68 @@ export default function Home() {
           </div>
         </div>
       </nav>
+
+      {/* WORKSPACE */}
+{result && (
+  <section className="max-w-6xl mx-auto px-6 pb-24 pt-10">
+
+    <div className="mb-8">
+      <UrlInput
+        url={url}
+        setUrl={setUrl}
+        loading={loading}
+        onProcess={async () => {
+          try {
+            setError("");
+            setResult(null);
+
+            if (!url.trim()) {
+              setError("Please enter a YouTube URL.");
+              return;
+            }
+
+            setLoading(true);
+            setStatus("Processing your video...");
+
+            const data = await processYouTubeVideo(url);
+            setResult(data);
+            setStatus("");
+          } catch (err) {
+            console.error(err);
+            setError("We couldn’t process this video. Try another one.");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      />
+    </div>
+
+    {loading && <p className="mb-4 text-sm">⏳ {status}</p>}
+    {error && <p className="mb-4 text-red-500">{error}</p>}
+
+    <div className="flex gap-6 border-b mb-6">
+      {["summary", "transcript"].map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setActiveTab(tab)}
+          className={`pb-3 ${
+            activeTab === tab
+              ? "text-red-500 border-b-2 border-red-500"
+              : "text-gray-400"
+          }`}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+
+    <div className="whitespace-pre-line">
+      {activeTab === "summary" && result.summary}
+      {activeTab === "transcript" && result.transcript}
+    </div>
+
+  </section>
+)}
 
       {/* HERO */}
       <section className="max-w-7xl mx-auto px-6 py-24 grid lg:grid-cols-2 gap-16 items-center">
@@ -149,85 +212,40 @@ export default function Home() {
       </section>
 
       {/* RESULT */}
-{result && (
-  <section className="max-w-6xl mx-auto px-6 pb-24">
+      {result && (
+        <section className="max-w-5xl mx-auto px-6 pb-20">
+          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
+            <div className="flex gap-6 border-b border-gray-200 mb-6">
+              {["summary", "transcript"].map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`pb-3 capitalize font-medium ${
+                    activeTab === tab
+                      ? "text-red-500 border-b-2 border-red-500"
+                      : "text-gray-400"
+                  }`}
+                >
+                  {tab}
+                </button>
+              ))}
+            </div>
 
-    {/* INPUT ARRIBA (reutilizar) */}
-    <div className="mb-8">
-      <UrlInput
-        url={url}
-        setUrl={setUrl}
-        loading={loading}
-        onProcess={async () => {
-          try {
-            setError("");
-            setResult(null);
+            {activeTab === "summary" && (
+              <div className="prose max-w-none whitespace-pre-line text-gray-700 leading-8">
+                {result.summary}
+              </div>
+            )}
 
-            if (!url.trim()) {
-              setError("Please enter a YouTube URL.");
-              return;
-            }
+            {activeTab === "transcript" && (
+              <div className="max-h-[450px] overflow-y-auto whitespace-pre-line text-gray-600 leading-7">
+                {result.transcript}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
-            setLoading(true);
-            setStatus("Processing your video...");
-
-            const data = await processYouTubeVideo(url);
-            setResult(data);
-            setStatus("");
-          } catch (err) {
-            console.error(err);
-            setError("We couldn’t process this video. Try another one.");
-          } finally {
-            setLoading(false);
-          }
-        }}
-      />
-    </div>
-
-    {/* STATUS */}
-    {loading && (
-      <p className="mb-4 text-gray-500 text-sm">⏳ {status}</p>
-    )}
-
-    {error && (
-      <p className="mb-4 text-red-500 text-sm font-medium">{error}</p>
-    )}
-
-    {/* TABS */}
-    <div className="flex gap-6 border-b border-gray-200 mb-6 text-sm font-medium">
-      {["summary", "transcript"].map((tab) => (
-        <button
-          key={tab}
-          onClick={() => setActiveTab(tab)}
-          className={`pb-3 capitalize ${
-            activeTab === tab
-              ? "text-red-500 border-b-2 border-red-500"
-              : "text-gray-400"
-          }`}
-        >
-          {tab}
-        </button>
-      ))}
-    </div>
-
-    {/* CONTENIDO LIMPIO (SIN CAJA) */}
-    <div className="text-gray-700 leading-8 whitespace-pre-line">
-      {activeTab === "summary" && result.summary}
-      {activeTab === "transcript" && result.transcript}
-    </div>
-
-    {/* CTA UPGRADE */}
-    <div className="mt-12 p-6 rounded-xl bg-red-50 border border-red-200 text-center">
-      <p className="text-sm text-gray-700 mb-3">
-        Unlock longer videos, faster processing, and advanced study tools.
-      </p>
-      <button className="bg-red-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-600">
-        Upgrade to Pro
-      </button>
-    </div>
-
-  </section>
-)}
       {/* FEATURES */}
       <section id="features" className="bg-white py-24 px-6">
         <div className="max-w-7xl mx-auto">
