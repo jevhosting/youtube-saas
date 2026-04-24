@@ -14,7 +14,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#111827]">
-
       {/* NAVBAR */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
@@ -82,14 +81,6 @@ export default function Home() {
                   const data = await processYouTubeVideo(url);
                   setResult(data);
                   setStatus("");
-
-                  // 🔥 SCROLL AUTOMÁTICO AL WORKSPACE
-                  setTimeout(() => {
-                    document.getElementById("workspace")?.scrollIntoView({
-                      behavior: "smooth",
-                    });
-                  }, 200);
-
                 } catch (err) {
                   console.error(err);
                   setError("We couldn’t process this video. Try another one.");
@@ -157,88 +148,298 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 🔴 WORKSPACE (RESULTADOS MEJORADOS) */}
-      {result && (
-        <section id="workspace" className="max-w-6xl mx-auto px-6 pb-24">
+      {/* RESULT */}
+{result && (
+  <section className="max-w-6xl mx-auto px-6 pb-24">
 
-          {/* INPUT ARRIBA */}
-          <div className="mb-8">
-            <UrlInput
-              url={url}
-              setUrl={setUrl}
-              loading={loading}
-              onProcess={async () => {
-                try {
-                  setError("");
-                  setResult(null);
+    {/* INPUT ARRIBA (reutilizar) */}
+    <div className="mb-8">
+      <UrlInput
+        url={url}
+        setUrl={setUrl}
+        loading={loading}
+        onProcess={async () => {
+          try {
+            setError("");
+            setResult(null);
 
-                  if (!url.trim()) {
-                    setError("Please enter a YouTube URL.");
-                    return;
-                  }
+            if (!url.trim()) {
+              setError("Please enter a YouTube URL.");
+              return;
+            }
 
-                  setLoading(true);
-                  setStatus("Processing your video...");
+            setLoading(true);
+            setStatus("Processing your video...");
 
-                  const data = await processYouTubeVideo(url);
-                  setResult(data);
-                  setStatus("");
-                } catch (err) {
-                  console.error(err);
-                  setError("We couldn’t process this video. Try another one.");
-                } finally {
-                  setLoading(false);
-                }
-              }}
-            />
+            const data = await processYouTubeVideo(url);
+            setResult(data);
+            setStatus("");
+          } catch (err) {
+            console.error(err);
+            setError("We couldn’t process this video. Try another one.");
+          } finally {
+            setLoading(false);
+          }
+        }}
+      />
+    </div>
+
+    {/* STATUS */}
+    {loading && (
+      <p className="mb-4 text-gray-500 text-sm">⏳ {status}</p>
+    )}
+
+    {error && (
+      <p className="mb-4 text-red-500 text-sm font-medium">{error}</p>
+    )}
+
+    {/* TABS */}
+    <div className="flex gap-6 border-b border-gray-200 mb-6 text-sm font-medium">
+      {["summary", "transcript"].map((tab) => (
+        <button
+          key={tab}
+          onClick={() => setActiveTab(tab)}
+          className={`pb-3 capitalize ${
+            activeTab === tab
+              ? "text-red-500 border-b-2 border-red-500"
+              : "text-gray-400"
+          }`}
+        >
+          {tab}
+        </button>
+      ))}
+    </div>
+
+    {/* CONTENIDO LIMPIO (SIN CAJA) */}
+    <div className="text-gray-700 leading-8 whitespace-pre-line">
+      {activeTab === "summary" && result.summary}
+      {activeTab === "transcript" && result.transcript}
+    </div>
+
+    {/* CTA UPGRADE */}
+    <div className="mt-12 p-6 rounded-xl bg-red-50 border border-red-200 text-center">
+      <p className="text-sm text-gray-700 mb-3">
+        Unlock longer videos, faster processing, and advanced study tools.
+      </p>
+      <button className="bg-red-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-600">
+        Upgrade to Pro
+      </button>
+    </div>
+
+  </section>
+)}
+      {/* FEATURES */}
+      <section id="features" className="bg-white py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-red-500 font-semibold mb-2">Features</p>
+            <h2 className="text-4xl font-bold">
+              Everything you need to learn from video faster
+            </h2>
+            <p className="text-gray-600 mt-4 max-w-2xl mx-auto">
+              Lumora helps you turn long educational videos, lectures, podcasts,
+              tutorials, and research content into organized learning material.
+            </p>
           </div>
 
-          {loading && (
-            <p className="mb-4 text-gray-500 text-sm">⏳ {status}</p>
-          )}
-
-          {error && (
-            <p className="mb-4 text-red-500 text-sm font-medium">{error}</p>
-          )}
-
-          {/* TABS */}
-          <div className="flex gap-6 border-b border-gray-200 mb-6 text-sm font-medium">
-            {["summary", "transcript"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`pb-3 capitalize ${
-                  activeTab === tab
-                    ? "text-red-500 border-b-2 border-red-500"
-                    : "text-gray-400"
-                }`}
+          <div className="grid md:grid-cols-4 gap-6">
+            {[
+              ["Smart Summaries", "Get structured summaries that highlight only what matters."],
+              ["Accurate Transcripts", "Turn video audio into clean, readable text."],
+              ["Study Notes", "Generate organized notes you can use for exams or research."],
+              ["Time Saving", "Cut hours of watching into minutes of reading."],
+              ["Academic Focus", "Built for students, teachers, and researchers."],
+              ["Creator Friendly", "Repurpose videos into written content ideas."],
+              ["Easy Workflow", "Paste a link, process, and get results."],
+              ["Future Citations", "Designed to support academic citation features later."],
+            ].map(([title, desc]) => (
+              <div
+                key={title}
+                className="p-6 rounded-2xl border border-gray-200 bg-[#fafafa] hover:shadow-md transition"
               >
-                {tab}
-              </button>
+                <div className="w-10 h-10 bg-red-100 text-red-500 rounded-xl flex items-center justify-center mb-4">
+                  ✦
+                </div>
+                <h3 className="font-semibold mb-2">{title}</h3>
+                <p className="text-sm text-gray-600 leading-6">{desc}</p>
+              </div>
             ))}
           </div>
+        </div>
+      </section>
 
-          {/* CONTENIDO SIN CAJA */}
-          <div className="text-gray-700 leading-8 whitespace-pre-line">
-            {activeTab === "summary" && result.summary}
-            {activeTab === "transcript" && result.transcript}
+      {/* HOW IT WORKS */}
+      <section id="how" className="py-24 px-6 bg-[#fafafa]">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-red-500 font-semibold mb-2">How it works</p>
+          <h2 className="text-4xl font-bold mb-12">
+            From video to study material in 3 steps
+          </h2>
+
+          <div className="grid md:grid-cols-3 gap-8 text-left">
+            {[
+              ["1", "Paste a YouTube link", "Drop any video URL into Lumora. No setup, no downloads, no complicated workflow."],
+              ["2", "We process it with AI", "Lumora extracts the audio, transcribes it, and organizes the content into useful sections."],
+              ["3", "Get your results", "Receive summaries, transcripts, and study notes ready to read, copy, or review."],
+            ].map(([num, title, desc]) => (
+              <div key={num} className="bg-white p-8 rounded-2xl border border-gray-200 shadow-sm">
+                <div className="w-10 h-10 bg-red-500 text-white rounded-full flex items-center justify-center font-bold mb-5">
+                  {num}
+                </div>
+                <h3 className="font-semibold text-xl mb-3">{title}</h3>
+                <p className="text-gray-600 leading-7">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* TESTIMONIALS */}
+      <section className="bg-white py-24 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-red-500 font-semibold mb-2">Loved by learners</p>
+            <h2 className="text-4xl font-bold">
+              Save time every time you study
+            </h2>
           </div>
 
-          {/* CTA */}
-          <div className="mt-12 p-6 rounded-xl bg-red-50 border border-red-200 text-center">
-            <p className="text-sm text-gray-700 mb-3">
-              Unlock longer videos, faster processing, and advanced study tools.
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              ["This literally saved me during finals week.", "Daniel R.", "College Student"],
+              ["I stopped rewatching long lectures and started reviewing notes instead.", "Maria S.", "Nursing Student"],
+              ["Best tool for turning YouTube lessons into something I can actually study.", "Kevin L.", "Computer Science Student"],
+            ].map(([quote, name, role]) => (
+              <div key={name} className="p-6 rounded-2xl border border-gray-200 bg-[#fafafa]">
+                <p className="text-yellow-500 mb-4">★★★★★</p>
+                <p className="text-gray-700 leading-7 mb-5">“{quote}”</p>
+                <p className="font-semibold">{name}</p>
+                <p className="text-sm text-gray-500">{role}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PRICING */}
+      <section id="pricing" className="py-24 px-6 bg-[#fafafa]">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="text-red-500 font-semibold mb-2">Pricing</p>
+          <h2 className="text-4xl font-bold mb-4">
+            Start free while Lumora is in beta
+          </h2>
+          <p className="text-gray-600 mb-12">
+            Simple plans designed for students, creators, and researchers.
+          </p>
+
+          <div className="grid md:grid-cols-3 gap-6 text-left">
+            {[
+              ["Free", "$0", "Try Lumora while in beta", ["5 videos per day", "Basic summaries", "Standard processing"]],
+              ["Pro", "$9", "For serious learners", ["Unlimited videos", "Advanced notes", "Faster processing", "Priority access"]],
+              ["Research", "$19", "For heavy study workflows", ["Longer videos", "Multi-video analysis soon", "Citation tools soon", "Export options soon"]],
+            ].map(([plan, price, desc, features]) => (
+              <div
+                key={plan}
+                className={`p-8 rounded-2xl border bg-white ${
+                  plan === "Pro"
+                    ? "border-red-500 shadow-xl scale-[1.02]"
+                    : "border-gray-200"
+                }`}
+              >
+                {plan === "Pro" && (
+                  <p className="text-xs bg-red-500 text-white px-3 py-1 rounded-full inline-block mb-4">
+                    Most popular
+                  </p>
+                )}
+                <h3 className="text-2xl font-bold mb-2">{plan}</h3>
+                <p className="text-gray-500 mb-5">{desc}</p>
+                <p className="text-4xl font-bold mb-6">
+                  {price}
+                  <span className="text-sm text-gray-500 font-normal"> / month</span>
+                </p>
+
+                <ul className="space-y-3 mb-8">
+                  {features.map((feature) => (
+                    <li key={feature} className="text-gray-600">
+                      <span className="text-red-500">✓</span> {feature}
+                    </li>
+                  ))}
+                </ul>
+
+                <button className={`w-full py-3 rounded-lg font-semibold ${
+                  plan === "Pro"
+                    ? "bg-red-500 text-white hover:bg-red-600"
+                    : "border border-red-500 text-red-500 hover:bg-red-50"
+                }`}>
+                  Get started
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section id="faq" className="bg-white py-24 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-red-500 font-semibold mb-2">FAQ</p>
+            <h2 className="text-4xl font-bold">Questions people ask</h2>
+          </div>
+
+          <div className="space-y-4">
+            {[
+              ["How long does it take?", "Most videos are processed in under a minute, depending on length."],
+              ["Do I need to install anything?", "No. Just paste a YouTube link and Lumora handles the rest."],
+              ["Does it work with long videos?", "Yes. Longer videos may take more time to process."],
+              ["Is Lumora free?", "Lumora is free during beta. Paid plans will be added later."],
+              ["Who is this for?", "Students, researchers, teachers, creators, and anyone who learns from video."],
+            ].map(([q, a]) => (
+              <div key={q} className="border border-gray-200 rounded-xl p-5 bg-[#fafafa]">
+                <h3 className="font-semibold mb-2">{q}</h3>
+                <p className="text-gray-600">{a}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="border-t border-gray-200 bg-[#fafafa] px-6 py-12">
+        <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-10">
+          <div>
+            <h3 className="font-bold text-red-500 text-lg mb-3">Lumora</h3>
+            <p className="text-gray-600 text-sm leading-6">
+              Turn YouTube videos into structured knowledge for studying,
+              research, and content creation.
             </p>
-            <button className="bg-red-500 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-red-600">
-              Upgrade to Pro
-            </button>
           </div>
 
-        </section>
-      )}
+          <div>
+            <h4 className="font-semibold mb-3">Product</h4>
+            <p className="text-sm text-gray-500 mb-2">Features</p>
+            <p className="text-sm text-gray-500 mb-2">Pricing</p>
+            <p className="text-sm text-gray-500">Roadmap</p>
+          </div>
 
-      {/* TODO LO DEMÁS SE QUEDA IGUAL (features, pricing, etc) */}
+          <div>
+            <h4 className="font-semibold mb-3">Company</h4>
+            <p className="text-sm text-gray-500 mb-2">About</p>
+            <p className="text-sm text-gray-500 mb-2">Contact</p>
+            <p className="text-sm text-gray-500">Blog</p>
+          </div>
 
+          <div>
+            <h4 className="font-semibold mb-3">Legal</h4>
+            <p className="text-sm text-gray-500 mb-2">Privacy</p>
+            <p className="text-sm text-gray-500">Terms</p>
+          </div>
+        </div>
+
+        <p className="text-center text-gray-400 text-sm mt-10">
+          © 2026 Lumora. All rights reserved.
+        </p>
+      </footer>
     </div>
   );
 }
