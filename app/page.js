@@ -211,40 +211,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* RESULT */}
-      {result && (
-        <section className="max-w-5xl mx-auto px-6 pb-20">
-          <div className="bg-white border border-gray-200 rounded-2xl shadow-lg p-8">
-            <div className="flex gap-6 border-b border-gray-200 mb-6">
-              {["summary", "transcript"].map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`pb-3 capitalize font-medium ${
-                    activeTab === tab
-                      ? "text-red-500 border-b-2 border-red-500"
-                      : "text-gray-400"
-                  }`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </div>
-
-            {activeTab === "summary" && (
-              <div className="prose max-w-none whitespace-pre-line text-gray-700 leading-8">
-                {result.summary}
-              </div>
-            )}
-
-            {activeTab === "transcript" && (
-              <div className="max-h-[450px] overflow-y-auto whitespace-pre-line text-gray-600 leading-7">
-                {result.transcript}
-              </div>
-            )}
-          </div>
-        </section>
-      )}
+      
 
       {/* FEATURES */}
       <section id="features" className="bg-white py-24 px-6">
